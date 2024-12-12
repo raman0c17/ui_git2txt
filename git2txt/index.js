@@ -130,25 +130,33 @@ export async function validateInput(input) {
         throw new Error('Repository URL or local path is required');
     }
 
-    const urlOrPath = input[0];
+    // Relative path ko absolute bana rahe hain
+    const urlOrPath = path.resolve(process.cwd(), input[0]);
 
-    // Check if it's a local directory
-    if (fs.existsSync(urlOrPath) && fs.statSync(urlOrPath).isDirectory()) {
-        const gitPath = path.join(urlOrPath, '.git');
-        if (fs.existsSync(gitPath)) {
-            return { type: 'local', path: urlOrPath };
-        } else {
-            throw new Error('Provided path is not a valid git repository');
+    // Check if local directory
+    try {
+        const stats = await fs.stat(urlOrPath);
+        if (stats.isDirectory()) {
+            const gitPath = path.join(urlOrPath, '.git');
+            const gitStats = await fs.stat(gitPath).catch(() => null);
+            if (gitStats && gitStats.isDirectory()) {
+                return { type: 'local', path: urlOrPath };
+            } else {
+                throw new Error('Provided path is not a valid git repository (no .git directory found)');
+            }
         }
+    } catch (error) {
+        // Not a directory or something else
     }
 
-    // Handle GitHub URLs
+    // Agar ye local directory nahi hai to phir github URL check
     if (!urlOrPath.includes('github.com') && !urlOrPath.match(/^[\w-]+\/[\w-]+$/)) {
         throw new Error('Only GitHub repositories or valid local paths are supported');
     }
 
     return { type: 'github', url: urlOrPath };
 }
+
 
 
 /**
