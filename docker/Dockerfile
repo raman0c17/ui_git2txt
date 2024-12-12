@@ -1,4 +1,3 @@
-# Use Python as the base image
 FROM python:3.9-slim
 
 # Install system dependencies
@@ -11,24 +10,20 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get install -y nodejs
 
-# Install git2txt globally
-RUN npm install -g git2txt
-
-# Set working directory
+# Copy our git2txt source code into the container
 WORKDIR /app
+COPY git2txt/ /app/git2txt/
 
-# Copy requirements first to leverage Docker cache
-COPY docker/requirements.txt /app/requirements.txt
+# Install git2txt globally from local source
+WORKDIR /app/git2txt
+RUN npm install -g .
 
-# Install Python dependencies
+# Move back to app directory
+WORKDIR /app
+COPY docker/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-# Copy application files
 COPY app/ /app/
 
-# Expose the port
 EXPOSE 5000
-
-# Run the Flask application
 CMD ["python", "app.py"]
-
