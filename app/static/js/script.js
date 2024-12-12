@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const generateForm = document.getElementById('generateForm');
+    const uploadForm = document.getElementById('uploadForm');
     const fileList = document.getElementById('fileList');
     const messageDiv = document.getElementById('message');
 
@@ -45,6 +46,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => showMessage('Error generating file', true));
+    });
+
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(uploadForm);
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                showMessage('File processed successfully');
+                updateFileList();
+            } else {
+                showMessage('Error processing uploaded repo', true);
+            }
+        })
+        .catch(error => showMessage('Error processing uploaded repo', true));
     });
 
     window.downloadFile = function(filename) {

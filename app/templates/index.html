@@ -10,13 +10,25 @@
     <div class="container">
         <h1>Git2Text Generator</h1>
         
+        <!-- GitHub URL Form -->
         <div class="neomorphic">
+            <h2>Process from GitHub URL</h2>
             <form id="generateForm">
                 <input type="text" id="repoUrl" name="repoUrl" placeholder="Enter GitHub repository URL" required>
                 <button type="submit">Generate</button>
             </form>
         </div>
 
+        <!-- Local Upload Form -->
+        <div class="neomorphic">
+            <h2>Upload Local Repository (ZIP)</h2>
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <input type="file" name="repoFile" accept=".zip" required>
+                <button type="submit">Upload and Process</button>
+            </form>
+        </div>
+
+        <!-- File List -->
         <div class="neomorphic">
             <table id="fileList">
                 <tbody>
