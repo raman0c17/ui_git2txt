@@ -4,104 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Git2Text Generator</title>
-    <style>
-        :root {
-            --bg-color: #e0e5ec;
-            --text-color: #333;
-            --shadow-color: #babecc;
-            --highlight-color: #ffffff;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .neomorphic {
-            border-radius: 10px;
-            background: var(--bg-color);
-            box-shadow: 5px 5px 10px var(--shadow-color),
-                        -5px -5px 10px var(--highlight-color);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        input[type="text"], button {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 5px;
-            background: var(--bg-color);
-            box-shadow: inset 2px 2px 5px var(--shadow-color),
-                        inset -2px -2px 5px var(--highlight-color);
-            color: var(--text-color);
-            font-size: 16px;
-        }
-
-        button {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            box-shadow: 2px 2px 5px var(--shadow-color),
-                        -2px -2px 5px var(--highlight-color);
-        }
-
-        button:active {
-            box-shadow: inset 2px 2px 5px var(--shadow-color),
-                        inset -2px -2px 5px var(--highlight-color);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .file-actions button {
-            flex: 1;
-        }
-
-        #message {
-            text-align: center;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        @media (max-width: 600px) {
-            .file-actions {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
@@ -109,7 +12,7 @@
         
         <div class="neomorphic">
             <form id="generateForm">
-                <input type="text" id="repoUrl" name="repoUrl" placeholder="Enter GitHub repository URLs" required>
+                <input type="text" id="repoUrl" name="repoUrl" placeholder="Enter GitHub repository URL" required>
                 <button type="submit">Generate</button>
             </form>
         </div>
@@ -117,7 +20,15 @@
         <div class="neomorphic">
             <table id="fileList">
                 <tbody>
-                    <!-- File list will be populated here -->
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file }}</td>
+                        <td class="file-actions">
+                            <button onclick="downloadFile('{{ file }}')">Download</button>
+                            <button onclick="deleteFile('{{ file }}')">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -125,76 +36,6 @@
         <div id="message"></div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const generateForm = document.getElementById('generateForm');
-            const fileList = document.getElementById('fileList');
-            const messageDiv = document.getElementById('message');
-
-            function showMessage(text, isError = false) {
-                messageDiv.textContent = text;
-                messageDiv.style.color = isError ? 'red' : 'green';
-                setTimeout(() => messageDiv.textContent = '', 3000);
-            }
-
-            function updateFileList() {
-                fetch('/')
-                    .then(response => response.json())
-                    .then(files => {
-                        fileList.innerHTML = '';
-                        files.forEach(file => {
-                            const row = fileList.insertRow();
-                            row.innerHTML = `
-                                <td>${file}</td>
-                                <td class="file-actions">
-                                    <button onclick="downloadFile('${file}')">Download</button>
-                                    <button onclick="deleteFile('${file}')">Delete</button>
-                                </td>
-                            `;
-                        });
-                    })
-                    .catch(error => showMessage('Error fetching file list', true));
-            }
-
-            generateForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const repoUrl = document.getElementById('repoUrl').value;
-                fetch('/generate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `repoUrl=${encodeURIComponent(repoUrl)}`
-                })
-                .then(response => {
-                    if (response.ok) {
-                        showMessage('File generated successfully');
-                        updateFileList();
-                    } else {
-                        showMessage('Error generating file', true);
-                    }
-                })
-                .catch(error => showMessage('Error generating file', true));
-            });
-
-            window.downloadFile = function(filename) {
-                window.location.href = `/download/${filename}`;
-            };
-
-            window.deleteFile = function(filename) {
-                fetch(`/delete/${filename}`, { method: 'POST' })
-                    .then(response => {
-                        if (response.ok) {
-                            showMessage('File deleted successfully');
-                            updateFileList();
-                        } else {
-                            showMessage('Error deleting file', true);
-                        }
-                    })
-                    .catch(error => showMessage('Error deleting file', true));
-            };
-
-            updateFileList();
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-

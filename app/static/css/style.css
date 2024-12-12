@@ -1,0 +1,96 @@
+:root {
+    --bg-color: #e0e5ec;
+    --text-color: #333;
+    --shadow-color: #babecc;
+    --highlight-color: #ffffff;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.neomorphic {
+    border-radius: 10px;
+    background: var(--bg-color);
+    box-shadow: 5px 5px 10px var(--shadow-color),
+                -5px -5px 10px var(--highlight-color);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+input[type="text"], button {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+    background: var(--bg-color);
+    box-shadow: inset 2px 2px 5px var(--shadow-color),
+                inset -2px -2px 5px var(--highlight-color);
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    box-shadow: 2px 2px 5px var(--shadow-color),
+                -2px -2px 5px var(--highlight-color);
+}
+
+button:active {
+    box-shadow: inset 2px 2px 5px var(--shadow-color),
+                inset -2px -2px 5px var(--highlight-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: left;
+}
+
+.file-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.file-actions button {
+    flex: 1;
+}
+
+#message {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .file-actions {
+        flex-direction: column;
+    }
+}
