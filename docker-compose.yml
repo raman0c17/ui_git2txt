@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  git2txt-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app:/app
+      - ./app/output_files:/app/output_files
+    restart: unless-stopped
+
