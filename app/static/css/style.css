@@ -26,6 +26,10 @@ h1 {
     margin-bottom: 30px;
 }
 
+h2 {
+    margin-bottom: 15px;
+}
+
 .neomorphic {
     border-radius: 10px;
     background: var(--bg-color);
@@ -35,7 +39,7 @@ h1 {
     margin-bottom: 20px;
 }
 
-input[type="text"], button {
+input[type="text"], input[type="file"], button {
     width: 100%;
     padding: 15px;
     margin-bottom: 15px;
