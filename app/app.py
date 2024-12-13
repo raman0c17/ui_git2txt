@@ -5,8 +5,13 @@ import zipfile
 
 app = Flask(__name__)
 
-OUTPUT_DIR = 'app/output_files'
-UPLOAD_DIR = 'app/uploaded_repos'
+# Get the absolute directory of the current file (app.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Define OUTPUT_DIR and UPLOAD_DIR relative to BASE_DIR
+OUTPUT_DIR = os.path.join(BASE_DIR, 'output_files')
+UPLOAD_DIR = os.path.join(BASE_DIR, 'uploaded_repos')
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -23,8 +28,8 @@ def files_list():
 @app.route('/generate', methods=['POST'])
 def generate():
     repo_url = request.form['repoUrl']
+    output_file = os.path.join(OUTPUT_DIR, f"{repo_url.split('/')[-1]}.txt")
     try:
-        output_file = os.path.join(OUTPUT_DIR, f"{repo_url.split('/')[-1]}.txt")
         subprocess.run(['git2txt', repo_url, '-o', output_file], check=True)
         return redirect(url_for('index'))
     except subprocess.CalledProcessError:
@@ -47,7 +52,7 @@ def upload():
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
 
-    # Check if .git exists, if not we can git init to ensure local repo format if desired
+    # If .git does not exist, initialize a git repo if needed
     git_path = os.path.join(extract_dir, '.git')
     if not os.path.exists(git_path):
         subprocess.run(['git', 'init'], cwd=extract_dir)
@@ -61,7 +66,10 @@ def upload():
 
 @app.route('/download/<filename>')
 def download(filename):
-    return send_file(os.path.join(OUTPUT_DIR, filename), as_attachment=True)
+    file_path = os.path.join(OUTPUT_DIR, filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    return "File not found", 404
 
 @app.route('/delete/<filename>', methods=['POST'])
 def delete(filename):
