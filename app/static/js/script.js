@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(text, isError = false) {
         messageDiv.textContent = text;
         messageDiv.style.color = isError ? 'red' : 'green';
-        setTimeout(() => messageDiv.textContent = '', 3000);
     }
 
     function updateFileList() {
@@ -32,17 +31,19 @@ document.addEventListener('DOMContentLoaded', function() {
     generateForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const repoUrl = document.getElementById('repoUrl').value;
+        showMessage('Processing...');
         fetch('/generate', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: `repoUrl=${encodeURIComponent(repoUrl)}`
         })
-        .then(response => {
-            if (response.ok) {
-                showMessage('File generated successfully');
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                showMessage(`File generated: ${data.filename}`);
                 updateFileList();
             } else {
-                showMessage('Error generating file', true);
+                showMessage(data.message || 'Error generating file', true);
             }
         })
         .catch(error => showMessage('Error generating file', true));
@@ -50,17 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        showMessage('Uploading and processing...');
         const formData = new FormData(uploadForm);
         fetch('/upload', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (response.ok) {
-                showMessage('File processed successfully');
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                showMessage(`File processed: ${data.filename}`);
                 updateFileList();
             } else {
-                showMessage('Error processing uploaded repo', true);
+                showMessage(data.message || 'Error processing uploaded repo', true);
             }
         })
         .catch(error => showMessage('Error processing uploaded repo', true));
@@ -83,5 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => showMessage('Error deleting file', true));
     };
 
+    // Initial file list load
     updateFileList();
 });

@@ -17,31 +17,35 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.route('/')
 def index():
+    # Initial page load: just render the template
     files = [f for f in os.listdir(OUTPUT_DIR) if f.endswith('.txt')]
     return render_template('index.html', files=files)
 
 @app.route('/files')
 def files_list():
+    # Return the list of files as JSON for the frontend to update dynamically
     files = [f for f in os.listdir(OUTPUT_DIR) if f.endswith('.txt')]
     return jsonify(files)
 
 @app.route('/generate', methods=['POST'])
 def generate():
     repo_url = request.form['repoUrl']
-    output_file = os.path.join(OUTPUT_DIR, f"{repo_url.split('/')[-1]}.txt")
+    filename = f"{repo_url.split('/')[-1]}.txt"
+    output_file = os.path.join(OUTPUT_DIR, filename)
     try:
+        # Run git2txt for the provided GitHub URL
         subprocess.run(['git2txt', repo_url, '-o', output_file], check=True)
-        return redirect(url_for('index'))
+        return jsonify({"status": "success", "filename": filename})
     except subprocess.CalledProcessError:
-        return "Error generating file", 500
+        return jsonify({"status": "error", "message": "Error generating file"}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload():
     if 'repoFile' not in request.files:
-        return "No file uploaded", 400
+        return jsonify({"status":"error","message":"No file uploaded"}),400
     file = request.files['repoFile']
     if file.filename == '':
-        return "No selected file", 400
+        return jsonify({"status":"error","message":"No selected file"}),400
 
     zip_path = os.path.join(UPLOAD_DIR, file.filename)
     file.save(zip_path)
@@ -57,12 +61,13 @@ def upload():
     if not os.path.exists(git_path):
         subprocess.run(['git', 'init'], cwd=extract_dir)
 
-    output_file = os.path.join(OUTPUT_DIR, f"{os.path.basename(extract_dir)}.txt")
+    filename = f"{os.path.basename(extract_dir)}.txt"
+    output_file = os.path.join(OUTPUT_DIR, filename)
     try:
         subprocess.run(['git2txt', extract_dir, '-o', output_file], check=True)
-        return redirect(url_for('index'))
+        return jsonify({"status":"success","filename":filename})
     except subprocess.CalledProcessError:
-        return "Error processing uploaded repo", 500
+        return jsonify({"status":"error","message":"Error processing uploaded repo"}),500
 
 @app.route('/download/<filename>')
 def download(filename):
