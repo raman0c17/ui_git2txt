@@ -21,8 +21,9 @@ WORKDIR /app/git2txt
 RUN npm install
 
 # Now install git2txt globally
+# raman-TODO : dir issue aa rha hai abs vs rel 
+RUN npm install .
 RUN npm install -g .
-
 # Move back to /app directory
 WORKDIR /app
 COPY docker/requirements.txt requirements.txt
