@@ -30,7 +30,9 @@ def files_list():
 @app.route('/generate', methods=['POST'])
 def generate():
     repo_url = request.form['repoUrl']
+    print(repo_url)
     filename = f"{repo_url.split('/')[-1]}.txt"
+    print(filename)
     output_file = os.path.join(OUTPUT_DIR, filename)
     try:
         # Run git2txt for the provided GitHub URL
@@ -64,6 +66,7 @@ def upload():
     filename = f"{os.path.basename(extract_dir)}.txt"
     output_file = os.path.join(OUTPUT_DIR, filename)
     try:
+        print("processing will runn git2txt")
         subprocess.run(['git2txt', extract_dir, '-o', output_file], check=True)
         return jsonify({"status":"success","filename":filename})
     except subprocess.CalledProcessError:
