@@ -125,36 +125,31 @@ function normalizeGitHubUrl(url) {
  * @returns {Promise<string>} Validated repository URL
  * @throws {Error} If input is missing or invalid
  */
+import { providers, checkLocalPath } from './providers.js';
+
 export async function validateInput(input) {
-    if (!input || input.length === 0) {
-        throw new Error('Repository URL or local path is required');
+  if (!input || input.length === 0) {
+    throw new Error('Repository URL or local path is required');
+  }
+
+  const originalInput = input[0];
+
+  // Check all providers
+  for (const p of providers) {
+    if (p.match(originalInput)) {
+      const normalizedURL = p.normalize(originalInput);
+      return { type: 'github', url: normalizedURL }; // yahan provider name k hisab se type set kar sakte ho
     }
+  }
 
-    // Relative path ko absolute bana rahe hain
-    const urlOrPath = path.resolve(process.cwd(), input[0]);
-
-    // Check if local directory
-    try {
-        const stats = await fs.stat(urlOrPath);
-        if (stats.isDirectory()) {
-            const gitPath = path.join(urlOrPath, '.git');
-            const gitStats = await fs.stat(gitPath).catch(() => null);
-            if (gitStats && gitStats.isDirectory()) {
-                return { type: 'local', path: urlOrPath };
-            } else {
-                throw new Error('Provided path is not a valid git repository (no .git directory found)');
-            }
-        }
-    } catch (error) {
-        // Not a directory or something else
-    }
-
-    // Agar ye local directory nahi hai to phir github URL check
-    if (!urlOrPath.includes('github.com') && !urlOrPath.match(/^[\w-]+\/[\w-]+$/)) {
-        throw new Error('Only GitHub repositories or valid local paths are supported');
-    }
-
-    return { type: 'github', url: urlOrPath };
+  // If none of the providers matched, try local
+  try {
+    const localInfo = await checkLocalPath(originalInput);
+    return localInfo;
+  } catch (e) {
+    // Not local either
+    throw new Error('Invalid input. Provide a valid GitHub/GitLab repository or local git repo path.');
+  }
 }
 
 
